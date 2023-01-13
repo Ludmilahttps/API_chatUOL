@@ -54,7 +54,7 @@ server.post('/participants', async (request, response) => {
   try {
     await db.collection('participants').insertOne({ name, lastStatus: Date.now() })
     await db.collection('messages').insertOne({ from: name, to: 'Todos', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
-    response.status(401).send('OK')
+    response.status(201).send('OK')
   } catch (error) {
     response.send("something is wrong")
   }
