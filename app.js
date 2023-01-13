@@ -40,22 +40,20 @@ server.listen(PORT, () => {
 server.post('/participants', async (request, response) => {
   console.log("post participants")
 
-  let name = request.body.name
-  const validate = nameValid.validate(request.body)
-  if (typeof(name) !== 'string' || name==="") {
+  let people = request.body
+  const peopleSchema = joi.object({name: joi.string().required},)
+  const validation = peopleSchema.validate(people, { abortEarly: false})
+  
+  if (validation.error) {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  const Confirm = await db.collection('participants').findOne({ name: name })
+  const Confirm = await db.collection('participants').findOne({ name: people })
   if (!Confirm) {
-    db.collection('participants').insertOne({ name: name, lastStatus: Date.now() })
-    db.collection('messages').insertOne({ from: name, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
+    db.collection('participants').insertOne({ name: people, lastStatus: Date.now() })
+    db.collection('messages').insertOne({ from: people, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
   }
 
   return response.status(409).send('Conflict ')
-})
-
-const nameValid = joi.object({
-  name: joi.string().min(2).required()
 })
