@@ -42,24 +42,20 @@ server.post('/participants', async (request, response) => {
 
   let name = request.body.name
   const validate = nameValid.validate(request.body)
-  if (!validate) {
+  if (typeof(name) !== 'string' || name==="") {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  const OuterName = await db.collection('participants').findOne({ name })
-  if (OuterName) {
-    return response.status(422).send('Conflict ')
+  const Confirm = await db.collection('participants').findOne({ name: name })
+  if (!Confirm) {
+    db.collection('participants').insertOne({ name: name, lastStatus: Date.now() })
+    db.collection('messages').insertOne({ from: name, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
+    return response.status(201).send('OK')
   }
 
-  try {
-    await db.collection('participants').insertOne({ name, lastStatus: Date.now() })
-    await db.collection('messages').insertOne({ from: name, to: 'Todos', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
-    response.status(201).send('OK')
-  } catch (error) {
-    response.send("something is wrong")
-  }
+  return response.status(422).send('Conflict ')
 })
 
 const nameValid = joi.object({
-  name: joi.string().required()
+  name: joi.string().min(2).required()
 })
