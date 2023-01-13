@@ -48,10 +48,10 @@ server.post('/participants', async (request, response) => {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  const Confirm = await db.collection('participants').findOne({ name: people })
+  const Confirm = await db.collection('participants').findOne({ name: people.name })
   if (!Confirm) {
-    db.collection('participants').insertOne({ name: people, lastStatus: Date.now() })
-    db.collection('messages').insertOne({ from: people, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
+    db.collection('participants').insertOne({ name: people.name, lastStatus: Date.now() })
+    db.collection('messages').insertOne({ from: people.name, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
   }
 
