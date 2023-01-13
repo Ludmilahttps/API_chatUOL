@@ -36,11 +36,6 @@
     [ ]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status
     [ ]  Salve a mensagem na collection de nome `messages` com o formato proposto na seção de armazenamento de dados
         
-        <aside>
-        ⚠️ O nome da coleção deve ser necessariamente `messages`, caso contrário a avaliação falhará
-        
-        </aside>
-        
 - **GET** `/messages`
     [ ]  Retornar as mensagens
     [ ]  Essa rota deve aceitar um parâmetro via **query string** (o que vem após a interrogação numa URL), indicando a quantidade de mensagens que gostaria de obter. Esse parâmetro deve se chamar `limit`
