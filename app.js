@@ -53,7 +53,7 @@ server.post('/participants', async (request, response) => {
     return response.status(201).send('OK')
   }
 
-  return response.status(422).send('Conflict ')
+  return response.status(409).send('Conflict ')
 })
 
 const nameValid = joi.object({
