@@ -25,7 +25,7 @@ try {
   await mongoClient.connect()
 }
 catch (error) {
-  console.log("Error in mongo conect", error.message)
+  console.log("Error in mongo connect", error.message)
 }
 
 db = mongoClient.db()
@@ -42,7 +42,7 @@ server.post('/participants', async (request, response) => {
 
   let name = request.body.name
   const validate = nameValid.validate(request.body)
-  if (validate.error) {
+  if (!validate) {
     return response.status(422).send('Unprocessable Entity')
   }
 
