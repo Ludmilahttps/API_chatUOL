@@ -11,6 +11,7 @@ import cors from "cors"
 import joi from "joi"
 import bcrypt from "bcrypt"
 import { v4 as uuidV4 } from 'uuid'
+import dayjs from "dayjs" 
 
 const server = express()
 dotenv.config()
@@ -21,15 +22,15 @@ const PORT = 5000
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
 let db
 
-try {
-  await mongoClient.connect()
-}
-catch (error) {
-  console.log("Error in mongo connect", error.message)
-}
-
-db = mongoClient.db()
-const talCollection = db.collection("COLLECTION")
+mongoClient
+  .connect()
+  .then(() => {
+    db = mongoClient.db()
+    console.log("Connected to database")
+  })
+  .catch((error) => {
+    console.log(error)
+  })
 
 // * init a server
 server.listen(PORT, () => {
@@ -40,20 +41,30 @@ server.listen(PORT, () => {
 server.post('/participants', async (request, response) => {
   console.log("post participants")
 
-  let people = request.body
-  const peopleSchema = joi.object({name: joi.string().required},)
-  const validation = peopleSchema.validate(people, { abortEarly: false})
-  
-  if (validation.error) {
+  const people = request.body
+  const { error, value } = peopleSchema.validate(people, { abortEarly: false })
+  console.log(error)
+  if (error) {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  const Confirm = await db.collection('participants').findOne({ name: people.name })
+  //people.name = stripHtml(participant.name).result.trim()
+  let Confirm = await db.collection('participants').findOne({ name: people.name })
   if (!Confirm) {
-    db.collection('participants').insertOne({ name: people.name, lastStatus: Date.now() })
+    try {
+      await db.collection("participants").insertOne({ name: people.name, lastStatus: Date.now() })
+    } catch {
+      console.log("Error adding participant");
+    }
     db.collection('messages').insertOne({ from: people.name, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
   }
 
   return response.status(409).send('Conflict ')
+})
+
+// * schemas
+
+const peopleSchema = joi.object({
+	name: joi.string().min(1).required(),
 })
