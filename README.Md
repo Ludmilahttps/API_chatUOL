@@ -1,25 +1,25 @@
 # Requisitos
 
 - Geral
-    [ ]  A porta utilizada pelo seu servidor deve ser a `5000`
-    [ ]  Versionamento usando Git é obrigatório, crie um **repositório público** no seu perfil do GitHub
+    [x]  A porta utilizada pelo seu servidor deve ser a `5000`
+    [x]  Versionamento usando Git é obrigatório, crie um **repositório público** no seu perfil do GitHub
     [ ]  Faça commits a cada funcionalidade implementada
     [ ]  Utilize dotenv
 - Armazenamento de dados
-    [ ]  Para persistir os dados (participantes e mensagens), utilize coleções do Mongo com a biblioteca `mongodb`  
-    [ ]  Se conecte ao banco usando sempre a variável de ambiente `DATABASE_URL`. Caso deixe o valor fixo ou use outra variável, a avaliação falhará   
-    [ ]  Não adicione nenhum nome customizado para o banco de dados. Use o nome dado pela connection string
+    [x]  Para persistir os dados (participantes e mensagens), utilize coleções do Mongo com a biblioteca `mongodb`  
+    [x]  Se conecte ao banco usando sempre a variável de ambiente `DATABASE_URL`. Caso deixe o valor fixo ou use outra variável, a avaliação falhará   
+    [x]  Não adicione nenhum nome customizado para o banco de dados. Use o nome dado pela connection string
         
 
 - **POST** `/participants`
-    [ ]  Deve receber (pelo body do request), um parâmetro **name**, contendo o nome do participante a ser cadastrado
-    [ ]  Validar: (caso algum erro seja encontrado, retornar **status 422**)
-        [ ]  **name** deve ser string não vazio
-    [ ]  As validações deverão ser feitas com a biblioteca `joi`
-    [ ]  Impeça o cadastro de um nome que já está sendo utilizado (caso exista, retornar **status 409**)
-    [ ]  Salvar o participante na coleção de nome `participants` com o MongoDB 
-    [ ]  Salvar com o MongoDB uma mensagem 
-    [ ]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status.
+    [x]  Deve receber (pelo body do request), um parâmetro **name**, contendo o nome do participante a ser cadastrado
+    [x]  Validar: (caso algum erro seja encontrado, retornar **status 422**)
+        [x]  **name** deve ser string não vazio
+    [x]  As validações deverão ser feitas com a biblioteca `joi`
+    [x]  Impeça o cadastro de um nome que já está sendo utilizado (caso exista, retornar **status 409**)
+    [x]  Salvar o participante na coleção de nome `participants` com o MongoDB 
+    [x]  Salvar com o MongoDB uma mensagem 
+    [x]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status.
     
 - **GET** `/participants`
     [ ]  Retornar a lista de todos os participantes

@@ -11,7 +11,7 @@ import cors from "cors"
 import joi from "joi"
 import bcrypt from "bcrypt"
 import { v4 as uuidV4 } from 'uuid'
-import dayjs from "dayjs" 
+import dayjs from "dayjs"
 
 const server = express()
 dotenv.config()
@@ -22,6 +22,7 @@ const PORT = 5000
 const mongoClient = new MongoClient(process.env.DATABASE_URL)
 let db
 
+// * Connect with mongoDB
 mongoClient
   .connect()
   .then(() => {
@@ -48,7 +49,6 @@ server.post('/participants', async (request, response) => {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  //people.name = stripHtml(participant.name).result.trim()
   let Confirm = await db.collection('participants').findOne({ name: people.name })
   if (!Confirm) {
     try {
@@ -56,15 +56,44 @@ server.post('/participants', async (request, response) => {
     } catch {
       console.log("Error adding participant");
     }
-    db.collection('messages').insertOne({ from: people.name, to: 'All', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
+    db.collection('messages').insertOne({ from: people.name, to: 'Todos', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
   }
-
   return response.status(409).send('Conflict ')
 })
 
-// * schemas
+// * GET participants
+server.get("/participants", async (request, response) => {
+  console.log("get participants")
 
+  db.collection("participants").find().toArray().then((participants) => {
+    response.status(200).send(participants)
+  })
+})
+
+// * POST messages
+server.post("/messages", async (request, response) => {
+  console.log("post messages")
+
+  // TODO: post messages
+})
+
+// * GET messages
+server.get("/messages", async (request, response) => {
+  console.log("get messages")
+
+  // TODO: show messages
+})
+
+// * POST status
+server.post("/status", async (request, response) => {
+  console.log("post status")
+
+  // TODO: post status
+})
+
+
+// * schemas
 const peopleSchema = joi.object({
-	name: joi.string().min(1).required(),
+  name: joi.string().min(1).required(),
 })
