@@ -56,7 +56,7 @@ server.post('/participants', async (request, response) => {
     } catch {
       console.log("Error adding participant")
     }
-    db.collection('messages').insertOne({ from: people.name, to: 'Todos', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
+    db.collection('messages').insertOne({ from: people.name, to: 'Todos', text: 'entra na sala...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
   }
   return response.status(409).send('Conflict ')
@@ -97,7 +97,9 @@ server.post("/messages", async (request, response) => {
 server.get("/messages", async (request, response) => {
   console.log("get messages")
 
-  // TODO: show messages
+  db.collection("messages").find().toArray().then((messages) => {
+    response.status(200).send(messages)
+  })
 })
 
 // * POST status

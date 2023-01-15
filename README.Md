@@ -22,25 +22,27 @@
     [x]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status.
     
 - **GET** `/participants`
-    [ ]  Retornar a lista de todos os participantes
+    [x]  Retornar a lista de todos os participantes
+
 - **POST** `/messages`
-    [ ]  Deve receber (pelo body da request), os parâmetros `to`, `text` e `type`
+    [x]  Deve receber (pelo body da request), os parâmetros `to`, `text` e `type`
         
-    [ ]  Já o `from` da mensagem, ou seja, o remetente, **não será enviado pelo body**. Será enviado pelo front através de um **header** na requisição, chamado `User`
-    [ ]  Validar: (caso algum erro seja encontrado, retornar **status 422**)
-        [ ]  **to** e **text** devem ser strings não vazias
-        [ ]  **type** só pode ser `message` ou `private_message`
-        [ ]  **from** deve ser um participante existente na lista de participantes
-    [ ]  As validações deverão ser feitas com a biblioteca `joi`, com exceção da validação de um participante existente na lista de participantes (use as funções do MongoDB para isso)
-    [ ]  Ao salvar essa mensagem, deve ser acrescentado o atributo **time**, contendo a hora atual no formato HH:MM:SS (utilize a biblioteca `dayjs`)
-    [ ]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status
-    [ ]  Salve a mensagem na collection de nome `messages` com o formato proposto na seção de armazenamento de dados
+    [x]  Já o `from` da mensagem, ou seja, o remetente, **não será enviado pelo body**. Será enviado pelo front através de um **header** na requisição, chamado `User`
+    [x]  Validar: (caso algum erro seja encontrado, retornar **status 422**)
+        [x]  **to** e **text** devem ser strings não vazias
+        [x]  **type** só pode ser `message` ou `private_message`
+        [x]  **from** deve ser um participante existente na lista de participantes
+    [x]  As validações deverão ser feitas com a biblioteca `joi`, com exceção da validação de um participante existente na lista de participantes (use as funções do MongoDB para isso)
+    [x]  Ao salvar essa mensagem, deve ser acrescentado o atributo **time**, contendo a hora atual no formato HH:MM:SS (utilize a biblioteca `dayjs`)
+    [x]  Por fim, retornar **status 201**. Não é necessário retornar nenhuma mensagem além do status
+    [x]  Salve a mensagem na collection de nome `messages` com o formato proposto na seção de armazenamento de dados
         
 - **GET** `/messages`
-    [ ]  Retornar as mensagens
+    [x]  Retornar as mensagens
     [ ]  Essa rota deve aceitar um parâmetro via **query string** (o que vem após a interrogação numa URL), indicando a quantidade de mensagens que gostaria de obter. Esse parâmetro deve se chamar `limit`
     [ ]  Caso não seja informado um `limit`, todas as mensagens devem ser retornadas. Caso tenha sido fornecido um `limit`, por exemplo 100, somente as últimas 100 mensagens mais recentes devem ser retornadas
     [ ]  Além disso, o back-end só deve entregar as mensagens que aquele usuário poderia ver. Ou seja, deve entregar todas as mensagens públicas, todas as mensagens privadas enviadas para ele e por ele. Para isso, o front envia um header `User` para identificar quem está fazendo a requisição
+
 - **POST** `/status`
     [ ]  Deve receber por um **header** na requisição, chamado `User`, contendo o nome do participante a ser atualizado
     [ ]  Caso este participante não conste na lista de participantes, deve ser retornado um **status 404.** Nenhuma mensagem precisa ser retornada além do status.
