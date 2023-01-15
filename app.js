@@ -49,12 +49,12 @@ server.post('/participants', async (request, response) => {
     return response.status(422).send('Unprocessable Entity')
   }
 
-  let Confirm = await db.collection('participants').findOne({ name: people.name })
+  const Confirm = await db.collection('participants').findOne({ name: people.name })
   if (!Confirm) {
     try {
       await db.collection("participants").insertOne({ name: people.name, lastStatus: Date.now() })
     } catch {
-      console.log("Error adding participant");
+      console.log("Error adding participant")
     }
     db.collection('messages').insertOne({ from: people.name, to: 'Todos', text: 'enter the room...', type: 'status', time: dayjs().format('HH:mm:ss') })
     return response.status(201).send('OK')
@@ -75,7 +75,22 @@ server.get("/participants", async (request, response) => {
 server.post("/messages", async (request, response) => {
   console.log("post messages")
 
-  // TODO: post messages
+  const { user } = request.headers
+  const message = request.body
+  
+  const Confirm = await db.collection('participants').findOne({ name: user })
+  const { error, value } = messageSchema.validate(message, { abortEarly: false })
+  console.log(error)
+  if (error || !Confirm) {
+    return response.status(422).send('Unprocessable Entity')
+  }
+  
+  try {
+    await db.collection('messages').insertOne({ from: user, to: message.to, text: message.text, type: message.type , time: dayjs().format('HH:mm:ss') })
+  } catch {
+    console.log("Error post message")
+  }
+  return response.status(201).send('OK')
 })
 
 // * GET messages
@@ -92,8 +107,12 @@ server.post("/status", async (request, response) => {
   // TODO: post status
 })
 
-
 // * schemas
 const peopleSchema = joi.object({
   name: joi.string().min(1).required(),
+})
+const messageSchema = joi.object({
+  to: joi.string().min(1).required(),
+  text: joi.string().min(1).required(),
+  type: joi.string().required().valid("message", "private_message"),
 })
