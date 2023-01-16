@@ -108,9 +108,9 @@ server.get("/messages", async (request, response) => {
       $or: [{ type: "message" }, { type: "status" },
       { $and: [{ type: "private_message" }, { $or: [{ to: user }, { from: user }] },], },],
     })
-      .toArray()
+      limit(limit).toArray()
 
-    response.send(all?.slice(-parseInt(limit)).reverse())
+    response.send(all.reverse())
   }
   catch (error) {
     return response.send(error).status(500)
