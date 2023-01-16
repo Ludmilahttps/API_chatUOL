@@ -131,7 +131,7 @@ server.post("/status", async (request, response) => {
 })
 
 // * DELETE message
-app.delete("/messages/:idMessage", async (req, res) => {
+server.delete("/messages/:idMessage", async (req, res) => {
   let { idMessage } = req.params
 
   const { error } = userSchema.validate(req.headers)
