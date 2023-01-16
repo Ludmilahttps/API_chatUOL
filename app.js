@@ -98,7 +98,7 @@ server.get("/messages", async (request, response) => {
   console.log("get messages")
 
   const limit = parseInt(request.query.limit)
-  if (limit && (isNaN(limit) || limit < 1)) {
+  if (!limit || (isNaN(limit) || limit < 1)) {
     return response.status(422).send('Unprocessable Entity')
   }
 
@@ -108,9 +108,9 @@ server.get("/messages", async (request, response) => {
       $or: [{ type: "message" }, { type: "status" },
       { $and: [{ type: "private_message" }, { $or: [{ to: user }, { from: user }] },], },],
     })
-      limit(limit).toArray()
+      .toArray()
 
-    response.send(all.reverse())
+    response.send(all?.slice(-parseInt(limit)).reverse())
   }
   catch (error) {
     return response.send(error).status(500)
