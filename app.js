@@ -97,16 +97,25 @@ server.post("/messages", async (request, response) => {
 server.get("/messages", async (request, response) => {
   console.log("get messages")
 
-  db.collection("messages").find().toArray().then((messages) => {
-    response.status(200).send(messages)
-  })
+  const max = request.query.limit
+  if (max && (isNaN(parseInt(max)) || parseInt(max) < 1)) {
+		return response.sendStatus(422)
+	}
+
+  const { user } = request.headers
+	const all = await db.collection("messages").find({
+		  $or: [{ type: "message" },{ type: "status" },
+				{ $and: [{ type: "private_message" },{ $or: [{ to: user }, { from: user }] },],},],
+		})
+		.toArray()
+	response.send(all?.slice(-parseInt(max)).reverse())
 })
 
 // * POST status
 server.post("/status", async (request, response) => {
   console.log("post status")
 
-  // TODO: post status
+  //TODO: post status
 })
 
 // * schemas
