@@ -145,28 +145,17 @@ const messageSchema = joi.object({
 })
 
 function maintenance() {
-  const interval = 15000;
-	const tolerance = 10000;
-	setInterval(async () => {
-		let participants;
-		await findInactiveParticipants(Date.now() - tolerance).then(
-			(result) => {
-				participants = result.map((participant) => participant.name);
-			}
-		);
-		const promises = participants.map(async (participant) => {
-			const time = dayjs().format("HH:mm:ss");
-			await removeParticipant(participant);
-			await addMessage(
-				participant,
-				"Todos",
-				"sai da sala...",
-				"status",
-				time
-			);
-		});
-		await Promise.all(promises);
-		//Maybe remove this console log once development is done
-		//console.log(`Removed participants: ${participants}`);
-	}, interval);
+  setInterval(async () => {
+    try {
+      await db.collection("participants").find().toArray().forEach(async (participant) => {
+        if (participant.lastStatus < Date.now() - 10000) {
+          await db.collection("participants").deleteOne({ _id: ObjectId(participant._id) })
+          await db.collection("messages").insertOne({ from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      return response.sendStatus(500)
+    }
+  }, 10000)
 }
