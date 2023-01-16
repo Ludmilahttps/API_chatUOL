@@ -31,8 +31,6 @@ mongoClient
     console.log(error)
   })
 
-maintenance()
-
 // * init a server
 server.listen(PORT, () => {
   console.log('Im a server')
@@ -181,56 +179,35 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
-function maintenance() {
-  const interval = 15000;
-	const tolerance = 10000;
-	setInterval(async () => {
-		let participants;
-		await findInactiveParticipants(Date.now() - tolerance).then(
-			(result) => {
-				participants = result.map((participant) => participant.name);
-			}
-		);
-		const promises = participants.map(async (participant) => {
-			const time = dayjs().format("HH:mm:ss");
-			await removeParticipant(participant);
-			await addMessage(
-				participant,
-				"Todos",
-				"sai da sala...",
-				"status",
-				time
-			);
-		});
-		await Promise.all(promises);
-		//Maybe remove this console log once development is done
-		//console.log(`Removed participants: ${participants}`);
-	}, interval);
-}
+setInterval(async () => {
+  try {
+      await client.connect();
+      const db = client.db("batePapoUol");
 
-async function Change(id, user) {
+      const itWillDeleted = await db.collection("users").find({
+          lastStatus: { $lt: (Date.now() - 10000) }
+      }).toArray()
 
-	if (!await db.collection("messages").findOne({ _id: ObjectId(id) })) {
-		return { status: 404, valid: false };
-	} else if (await db.collection("messages").findOne({ _id: ObjectId(id) }).from !== user) {
-		return { status: 401, valid: false };
-	} else {
-		return { status: 200, valid: true };
-	}
-}
+      if (itWillDeleted.length === 0) {
+          client.close();
+          return console.log("there is no user to be deleted")
+      }
 
-
-async function findInactiveParticipants(time) {
-	let result;
-	try {
-		const participants = db.collection("participants")
-		result = await participants
-			.find({ lastStatus: { $lt: time } })
-			.toArray()
-	} catch {
-		console.log("Error finding participants")
-		result = []
-	} finally {
-		return result
-	}
-} 
+      for (let i = 0; i < itWillDeleted.length; i++) {
+          const id = itWillDeleted[i]._id
+          await db.collection("users").deleteOne({ _id: id })
+          await db.collection("messages").insertOne({
+              from: itWillDeleted[i].name,
+              to: "Todos",
+              text: "sai da sala...",
+              type: "status",
+              time: dayjs().format('HH:mm:ss')
+          })
+          console.log(`${itWillDeleted[i].name} left the room`)
+      }
+      client.close()
+  } catch (error) {
+      res.sendStatus(500)
+      client.close()
+  }
+}, 15000)
