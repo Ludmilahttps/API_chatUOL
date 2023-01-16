@@ -130,42 +130,6 @@ server.post("/status", async (request, response) => {
   }
 })
 
-// * DELETE message
-server.delete("/messages/:idMessage", async (req, res) => {
-  let { idMessage } = req.params
-
-  const { error } = userSchema.validate(req.headers)
-  if (error) {
-      res.status(422).send(error.details[0].message);
-      return;
-  }
-
-  const user = sanitaze(req.headers.user);
-  const errorAfter = userSchema.validate({ user })
-  if (errorAfter.error) {
-      res.status(422).send(errorAfter.error.details[0].message);
-      return;
-  }
-  try {
-      await mongoClient.connect();
-      const db = mongoClient.db("batePapoUol");
-
-      const message = await db.collection("messages").findOne({ _id: ObjectId(idMessage) })
-
-      if (!message) return res.sendStatus(404);
-      if (message.from !== user) return res.sendStatus(401);
-
-      await db.collection("messages").deleteOne({ _id: ObjectId(idMessage) })
-
-      res.sendStatus(200)
-      mongoClient.close()
-  } catch (error) {
-      console.log(error)
-      res.sendStatus(500);
-      mongoClient.close()
-  }
-})
-
 // * schemas
 const peopleSchema = joi.object({
   name: joi.string().min(1).required(),
@@ -176,7 +140,3 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
-export function sanitaze(string) {
-  const sanitize = stripHtml(string).result;
-  return sanitize
-}
