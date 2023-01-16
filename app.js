@@ -135,10 +135,12 @@ server.post("/status", async (request, response) => {
 
 // * DELETE messages
 server.delete("/messages/:id", async (request, response) => {
-	try {
+	console.log("delete message")
+
+  try {
 		const { id } = request.params
 		const { user } = request.headers
-		const { status, valid } = await validateChange(id, user)
+		const { status, valid } = await Change(id, user)
 		if (valid) {
 			await db.collection("messages").deleteOne({ _id: ObjectId(id) })
 		}
@@ -162,7 +164,7 @@ function maintenance() {
   setInterval(async () => {
     try {
       await db.collection("participants").find().toArray().forEach(async (people) => {
-        if (people.lastStatus < Date.now() - 1000) {
+        if (people.lastStatus < Date.now() - 10000) {
           await db.collection("participants").deleteOne({ _id: ObjectId(people._id) })
           await db.collection("messages").insertOne({ from: people.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
         }
@@ -171,5 +173,16 @@ function maintenance() {
       console.log(error)
       return response.sendStatus(500)
     }
-  }, 1000)
+  }, 10000)
+}
+
+async function Change(id, user) {
+
+	if (!await db.collection("messages").findOne({ _id: ObjectId(id) })) {
+		return { status: 404, valid: false };
+	} else if (await db.collection("messages").findOne({ _id: ObjectId(id) }).from !== user) {
+		return { status: 401, valid: false };
+	} else {
+		return { status: 200, valid: true };
+	}
 }
