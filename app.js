@@ -96,7 +96,7 @@ server.get("/messages", async (request, response) => {
   console.log("get messages")
 
   const limit = parseInt(request.query.limit)
-  if (limit && (isNaN(limit) || limit < 1)) {
+  if (!limit && (isNaN(limit) || limit < 1)) {
     return response.status(422).send('Unprocessable Entity')
   }
 
