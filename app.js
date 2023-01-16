@@ -161,19 +161,30 @@ const messageSchema = joi.object({
 })
 
 function maintenance() {
-  setInterval(async () => {
-    try {
-      await db.collection("participants").find().toArray().forEach(async (people) => {
-        if (people.lastStatus < Date.now() - 10000) {
-          await db.collection("participants").deleteOne({ _id: ObjectId(people._id) })
-          await db.collection("messages").insertOne({ from: people.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
-        }
-      })
-    } catch (error) {
-      console.log(error)
-      return response.sendStatus(500)
-    }
-  }, 10000)
+  const interval = 15000;
+	const tolerance = 10000;
+	setInterval(async () => {
+		let participants;
+		await findInactiveParticipants(Date.now() - tolerance).then(
+			(result) => {
+				participants = result.map((participant) => participant.name);
+			}
+		);
+		const promises = participants.map(async (participant) => {
+			const time = dayjs().format("HH:mm:ss");
+			await removeParticipant(participant);
+			await addMessage(
+				participant,
+				"Todos",
+				"sai da sala...",
+				"status",
+				time
+			);
+		});
+		await Promise.all(promises);
+		//Maybe remove this console log once development is done
+		//console.log(`Removed participants: ${participants}`);
+	}, interval);
 }
 
 async function Change(id, user) {
@@ -186,3 +197,19 @@ async function Change(id, user) {
 		return { status: 200, valid: true };
 	}
 }
+
+
+async function findInactiveParticipants(time) {
+	let result;
+	try {
+		const participants = db.collection("participants")
+		result = await participants
+			.find({ lastStatus: { $lt: time } })
+			.toArray()
+	} catch {
+		console.log("Error finding participants")
+		result = []
+	} finally {
+		return result
+	}
+} 
