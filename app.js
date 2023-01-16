@@ -95,21 +95,20 @@ server.post("/messages", async (request, response) => {
 server.get("/messages", async (request, response) => {
   console.log("get messages")
 
-  try {
   const limit = parseInt(request.query.limit)
   if (limit && (isNaN(limit) || limit < 1)) {
     return response.status(422).send('Unprocessable Entity')
   }
 
   const { user } = request.headers
-  
-    const messages = await db.collection("messages").find({
+  try {
+    const all = await db.collection("messages").find({
       $or: [{ type: "message" }, { type: "status" },
       { $and: [{ type: "private_message" }, { $or: [{ to: user }, { from: user }] },], },],
     })
       .toArray()
 
-    response.send(messages?.slice(-parseInt(limit)).reverse())
+    response.send(all?.slice(-parseInt(limit)).reverse())
   }
   catch (error) {
     return response.send(error).status(500)
@@ -131,44 +130,6 @@ server.post("/status", async (request, response) => {
   }
 })
 
-// * DELETE messages
-server.delete("/messages/:id", async (req, res) => {
-	console.log("delete message")
-
-  let { idMessage } = req.params
-
-  const { error } = userSchema.validate(req.headers)
-  if (error) {
-      res.status(422).send(error.details[0].message);
-      return;
-  }
-
-  const user = sanitaze(req.headers.user);
-  const errorAfter = userSchema.validate({ user })
-  if (errorAfter.error) {
-      res.status(422).send(errorAfter.error.details[0].message);
-      return;
-  }
-  try {
-      await client.connect();
-      const db = client.db("batePapoUol");
-
-      const message = await db.collection("messages").findOne({ _id: ObjectId(idMessage) })
-
-      if (!message) return res.sendStatus(404);
-      if (message.from !== user) return res.sendStatus(401);
-
-      await db.collection("messages").deleteOne({ _id: ObjectId(idMessage) })
-
-      res.sendStatus(200)
-      client.close()
-  } catch (error) {
-      console.log(error)
-      res.sendStatus(500);
-      client.close()
-  }
-})
-
 // * schemas
 const peopleSchema = joi.object({
   name: joi.string().min(1).required(),
@@ -178,36 +139,3 @@ const messageSchema = joi.object({
   text: joi.string().min(1).required(),
   type: joi.string().required().valid("message", "private_message"),
 })
-
-setInterval(async () => {
-  try {
-      await mongoClient.connect()
-      const db = mongoClient.db("batePapoUol")
-
-      const itWillDeleted = await db.collection("users").find({
-          lastStatus: { $lt: (Date.now() - 10000) }
-      }).toArray()
-
-      if (itWillDeleted.length === 0) {
-          mongoClient.close();
-          return console.log("there is no user to be deleted")
-      }
-
-      for (let i = 0; i < itWillDeleted.length; i++) {
-          const id = itWillDeleted[i]._id
-          await db.collection("users").deleteOne({ _id: id })
-          await db.collection("messages").insertOne({
-              from: itWillDeleted[i].name,
-              to: "Todos",
-              text: "sai da sala...",
-              type: "status",
-              time: dayjs().format('HH:mm:ss')
-          })
-          console.log(`${itWillDeleted[i].name} left the room`)
-      }
-      mongoClient.close()
-  } catch (error) {
-      response.sendStatus(500)
-      mongoClient.close()
-  }
-}, 1000)
