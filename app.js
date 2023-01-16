@@ -120,6 +120,8 @@ server.post("/status", async (request, response) => {
   console.log("post status")
 
   const { user } = request.headers
+  const userExists = await db.collection("participants").findOne({ name: user })
+  if (!userExists) return response.status(404).send('Not found')
   const newS = await db.collection("participants").updateOne({ name: user }, { $set: { lastStatus: Date.now() } })
   if (newS === 0) {
     return response.status(404).send('Not found')
