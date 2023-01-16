@@ -39,15 +39,15 @@
         
 - **GET** `/messages`
     [x]  Retornar as mensagens
-    [ ]  Essa rota deve aceitar um parâmetro via **query string** (o que vem após a interrogação numa URL), indicando a quantidade de mensagens que gostaria de obter. Esse parâmetro deve se chamar `limit`
-    [ ]  Caso não seja informado um `limit`, todas as mensagens devem ser retornadas. Caso tenha sido fornecido um `limit`, por exemplo 100, somente as últimas 100 mensagens mais recentes devem ser retornadas
-    [ ]  Além disso, o back-end só deve entregar as mensagens que aquele usuário poderia ver. Ou seja, deve entregar todas as mensagens públicas, todas as mensagens privadas enviadas para ele e por ele. Para isso, o front envia um header `User` para identificar quem está fazendo a requisição
+    [x]  Essa rota deve aceitar um parâmetro via **query string** (o que vem após a interrogação numa URL), indicando a quantidade de mensagens que gostaria de obter. Esse parâmetro deve se chamar `limit`
+    [x]  Caso não seja informado um `limit`, todas as mensagens devem ser retornadas. Caso tenha sido fornecido um `limit`, por exemplo 100, somente as últimas 100 mensagens mais recentes devem ser retornadas
+    [x]  Além disso, o back-end só deve entregar as mensagens que aquele usuário poderia ver. Ou seja, deve entregar todas as mensagens públicas, todas as mensagens privadas enviadas para ele e por ele. Para isso, o front envia um header `User` para identificar quem está fazendo a requisição
 
 - **POST** `/status`
-    [ ]  Deve receber por um **header** na requisição, chamado `User`, contendo o nome do participante a ser atualizado
-    [ ]  Caso este participante não conste na lista de participantes, deve ser retornado um **status 404.** Nenhuma mensagem precisa ser retornada além do status.
-    [ ]  Atualizar o atributo **lastStatus** do participante informado para o timestamp atual, utilizando `Date.now()`
-    [ ]  Por fim, retornar **status 200**
+    [x]  Deve receber por um **header** na requisição, chamado `User`, contendo o nome do participante a ser atualizado
+    [x]  Caso este participante não conste na lista de participantes, deve ser retornado um **status 404.** Nenhuma mensagem precisa ser retornada além do status.
+    [x]  Atualizar o atributo **lastStatus** do participante informado para o timestamp atual, utilizando `Date.now()`
+    [x]  Por fim, retornar **status 200**
 - Remoção automática de usuários inativos
-    [ ]  A cada 15 segundos, remova da lista de participantes os participantes que possuam um **lastStatus** de mais de 10 segundos atrás
-    [ ]  Para cada participante removido, salve uma nova mensagem em memória
+    [x]  A cada 15 segundos, remova da lista de participantes os participantes que possuam um **lastStatus** de mais de 10 segundos atrás
+    [x]  Para cada participante removido, salve uma nova mensagem em memória

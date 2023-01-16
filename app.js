@@ -97,9 +97,9 @@ server.post("/messages", async (request, response) => {
 server.get("/messages", async (request, response) => {
   console.log("get messages")
 
-  const max = request.query.limit
-  if (max && (isNaN(parseInt(max)) || parseInt(max) < 1)) {
-		return response.sendStatus(422)
+  const limit = parseInt(request.query.limit)
+  if (limit && (isNaN(limit) || parseInt(limit) < 1)) {
+		return response.status(422).send('Unprocessable Entity')
 	}
 
   const { user } = request.headers
@@ -108,14 +108,21 @@ server.get("/messages", async (request, response) => {
 				{ $and: [{ type: "private_message" },{ $or: [{ to: user }, { from: user }] },],},],
 		})
 		.toArray()
-	response.send(all?.slice(-parseInt(max)).reverse())
+    
+	response.send(all?.slice(-parseInt(limit)).reverse())
 })
 
 // * POST status
 server.post("/status", async (request, response) => {
   console.log("post status")
 
-  //TODO: post status
+  const { user } = request.headers
+	const newS = await db.collection("participants").updateOne({ name: user }, { $set: { lastStatus: Date.now() } })
+	if (newS === 0) {
+    return response.status(404).send('Not found')
+	} else {
+    return response.status(200).send('OK')
+	}
 })
 
 // * schemas
