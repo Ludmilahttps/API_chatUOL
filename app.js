@@ -175,3 +175,8 @@ const messageSchema = joi.object({
   text: joi.string().min(1).required(),
   type: joi.string().required().valid("message", "private_message"),
 })
+
+export function sanitaze(string) {
+  const sanitize = stripHtml(string).result;
+  return sanitize
+}
