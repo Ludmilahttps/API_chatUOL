@@ -75,16 +75,16 @@ server.post("/messages", async (request, response) => {
 
   const { user } = request.headers
   const message = request.body
-  
+
   const Confirm = await db.collection('participants').findOne({ name: user })
   const { error, value } = messageSchema.validate(message, { abortEarly: false })
   console.log(error)
   if (error || !Confirm) {
     return response.status(422).send('Unprocessable Entity')
   }
-  
+
   try {
-    await db.collection('messages').insertOne({ from: user, to: message.to, text: message.text, type: message.type , time: dayjs().format('HH:mm:ss') })
+    await db.collection('messages').insertOne({ from: user, to: message.to, text: message.text, type: message.type, time: dayjs().format('HH:mm:ss') })
   } catch {
     console.log("Error post message")
   }
@@ -96,18 +96,23 @@ server.get("/messages", async (request, response) => {
   console.log("get messages")
 
   const limit = parseInt(request.query.limit)
-  if (limit && (isNaN(limit) || parseInt(limit) < 1)) {
-		return response.status(422).send('Unprocessable Entity')
-	}
+  if (limit && (isNaN(limit) || limit < 1)) {
+    return response.status(422).send('Unprocessable Entity')
+  }
 
   const { user } = request.headers
-	const all = await db.collection("messages").find({
-		  $or: [{ type: "message" },{ type: "status" },
-				{ $and: [{ type: "private_message" },{ $or: [{ to: user }, { from: user }] },],},],
-		})
-		.toArray()
+  try {
+    const all = await db.collection("messages").find({
+      $or: [{ type: "message" }, { type: "status" },
+      { $and: [{ type: "private_message" }, { $or: [{ to: user }, { from: user }] },], },],
+    })
+      .toArray()
 
-	response.send(all?.slice(-parseInt(limit)).reverse())
+    response.send(all?.slice(-parseInt(limit)).reverse())
+  }
+  catch (error) {
+    return response.send(error).status(500)
+  }
 })
 
 // * POST status
@@ -115,12 +120,12 @@ server.post("/status", async (request, response) => {
   console.log("post status")
 
   const { user } = request.headers
-	const newS = await db.collection("participants").updateOne({ name: user }, { $set: { lastStatus: Date.now() } })
-	if (newS === 0) {
+  const newS = await db.collection("participants").updateOne({ name: user }, { $set: { lastStatus: Date.now() } })
+  if (newS === 0) {
     return response.status(404).send('Not found')
-	} else {
+  } else {
     return response.status(200).send('OK')
-	}
+  }
 })
 
 // * schemas
