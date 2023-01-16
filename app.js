@@ -181,15 +181,15 @@ const messageSchema = joi.object({
 
 setInterval(async () => {
   try {
-      await client.connect();
-      const db = client.db("batePapoUol");
+      await mongoClient.connect()
+      const db = mongoClient.db("batePapoUol")
 
       const itWillDeleted = await db.collection("users").find({
           lastStatus: { $lt: (Date.now() - 10000) }
       }).toArray()
 
       if (itWillDeleted.length === 0) {
-          client.close();
+          mongoClient.close();
           return console.log("there is no user to be deleted")
       }
 
@@ -205,9 +205,9 @@ setInterval(async () => {
           })
           console.log(`${itWillDeleted[i].name} left the room`)
       }
-      client.close()
+      mongoClient.close()
   } catch (error) {
-      res.sendStatus(500)
-      client.close()
+      response.sendStatus(500)
+      mongoClient.close()
   }
-}, 15000)
+}, 1000)
