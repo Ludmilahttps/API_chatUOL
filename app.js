@@ -133,6 +133,20 @@ server.post("/status", async (request, response) => {
   }
 })
 
+// * DELETE messages
+server.delete("/messages/:id", async (request, response) => {
+	try {
+		const { id } = request.params
+		const { user } = request.headers
+		const { status, valid } = await validateChange(id, user)
+		if (valid) {
+			await db.collection("messages").deleteOne({ _id: ObjectId(id) })
+		}
+		response.sendStatus(status)
+	} catch {
+		response.sendStatus(500)
+	}
+})
 
 // * schemas
 const peopleSchema = joi.object({
