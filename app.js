@@ -134,20 +134,41 @@ server.post("/status", async (request, response) => {
 })
 
 // * DELETE messages
-server.delete("/messages/:id", async (request, response) => {
+server.delete("/messages/:id", async (req, res) => {
 	console.log("delete message")
 
+  let { idMessage } = req.params
+
+  const { error } = userSchema.validate(req.headers)
+  if (error) {
+      res.status(422).send(error.details[0].message);
+      return;
+  }
+
+  const user = sanitaze(req.headers.user);
+  const errorAfter = userSchema.validate({ user })
+  if (errorAfter.error) {
+      res.status(422).send(errorAfter.error.details[0].message);
+      return;
+  }
   try {
-		const { id } = request.params
-		const { user } = request.headers
-		const { status, valid } = await Change(id, user)
-		if (valid) {
-			await db.collection("messages").deleteOne({ _id: ObjectId(id) })
-		}
-		response.sendStatus(status)
-	} catch {
-		response.sendStatus(500)
-	}
+      await client.connect();
+      const db = client.db("batePapoUol");
+
+      const message = await db.collection("messages").findOne({ _id: ObjectId(idMessage) })
+
+      if (!message) return res.sendStatus(404);
+      if (message.from !== user) return res.sendStatus(401);
+
+      await db.collection("messages").deleteOne({ _id: ObjectId(idMessage) })
+
+      res.sendStatus(200)
+      client.close()
+  } catch (error) {
+      console.log(error)
+      res.sendStatus(500);
+      client.close()
+  }
 })
 
 // * schemas
