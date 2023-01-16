@@ -97,13 +97,14 @@ server.post("/messages", async (request, response) => {
 server.get("/messages", async (request, response) => {
   console.log("get messages")
 
+  try {
   const limit = parseInt(request.query.limit)
   if (limit && (isNaN(limit) || limit < 1)) {
     return response.status(422).send('Unprocessable Entity')
   }
 
   const { user } = request.headers
-  try {
+  
     const messages = await db.collection("messages").find({
       $or: [{ type: "message" }, { type: "status" },
       { $and: [{ type: "private_message" }, { $or: [{ to: user }, { from: user }] },], },],
@@ -131,6 +132,7 @@ server.post("/status", async (request, response) => {
     return response.status(200).send('OK')
   }
 })
+
 
 // * schemas
 const peopleSchema = joi.object({
