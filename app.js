@@ -5,12 +5,10 @@
 // This is a normal comment
 
 import express from 'express'
-import { MongoClient, ObjectId } from "mongodb"
+import { MongoClient } from "mongodb"
 import dotenv from "dotenv"
 import cors from "cors"
 import joi from "joi"
-import bcrypt from "bcrypt"
-import { v4 as uuidV4 } from 'uuid'
 import dayjs from "dayjs"
 
 const server = express()
@@ -108,7 +106,7 @@ server.get("/messages", async (request, response) => {
 				{ $and: [{ type: "private_message" },{ $or: [{ to: user }, { from: user }] },],},],
 		})
 		.toArray()
-    
+
 	response.send(all?.slice(-parseInt(limit)).reverse())
 })
 
