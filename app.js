@@ -31,6 +31,8 @@ mongoClient
     console.log(error)
   })
 
+  maintenance() 
+  
 // * init a server
 server.listen(PORT, () => {
   console.log('Im a server')
@@ -140,3 +142,18 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
+function maintenance() {
+  setInterval(async () => {
+    try {
+      await db.collection("participants").find().toArray().forEach(async (participant) => {
+        if (participant.lastStatus < Date.now() - 10000) {
+          await db.collection("participants").deleteOne({ _id: ObjectId(participant._id) })
+          await db.collection("messages").insertOne({ from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      return response.sendStatus(500)
+    }
+  }, 10000)
+}
