@@ -140,6 +140,7 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
+// * remoção de usuarios inativos e manutenção de ativos
 setInterval(async () => {
   try {
     const aux = await db.collection("participants").find({ lastStatus: { $lte: Date.now() - 10000} }).toArray()
