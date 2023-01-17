@@ -141,34 +141,19 @@ const messageSchema = joi.object({
 })
 
 setInterval(async () => {
-
-  const tenSecondsAgo = Date.now() - 10000
-
   try {
-
-    const participantInactives = await db.collection("participants")
-      .find({ lastStatus: { $lte: tenSecondsAgo } }).toArray()
-
-    if (participantInactives.length > 0) {
-      const inactiveMessages = participantInactives.map((participant) => {
+    const aux = await db.collection("participants").find({ lastStatus: { $lte: Date.now() - 10000} }).toArray()
+    if (aux.length > 0) {
+        const inactive = aux.map((participant) => {
         return {
-          from: participant.name,
-          to: 'Todos',
-          text: 'sai da sala...',
-          type: 'status',
-          time: dayjs().format("HH:mm:ss")
+          from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs().format("HH:mm:ss")
         }
       })
-
-      await db.collection("messages").insertMany(inactiveMessages)
-      await db.collection("participants").deleteMany(
-        { lastStatus: { $lte: tenSecondsAgo } }
-      )
+      await db.collection("messages").insertMany(inactive)
+      await db.collection("participants").deleteMany({ lastStatus: { $lte: Date.now() - 10000 } })
     }
-
   } catch (error) {
     console.error(error)
-    res.status(500).send("Deu pau no db no setInterval")
+    response.sendStatus(500)
   }
-
 }, 15000)
