@@ -140,32 +140,35 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
-setInterval( async () => {
+setInterval(async () => {
+
+  const tenSecondsAgo = Date.now() - 10000
+
   try {
-    await db.collection("participants").find().toArray().forEach(async (participant) => {
-      if (participant.lastStatus < Date.now() - 10000) {
-        await db.collection("messages").insertOne({ from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
-        await db.collection("participants").deleteOne({ _id: ObjectId(participant._id) })
-      }
-    })
 
+    const participantInactives = await db.collection("participants")
+      .find({ lastStatus: { $lte: tenSecondsAgo } }).toArray()
 
-    // const aux = await db.collection("participants").find( {lastStatus: {$lte: Date.now() - 10000}}).toArray()
-    // if(aux.length > 0)
-    // {
-    //   const inative = aux.map((people) => {
-    //     return {
-    //       from: people.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss')
-    //     }
-    //   })
-    // }
+    if (participantInactives.length > 0) {
+      const inactiveMessages = participantInactives.map((participant) => {
+        return {
+          from: participant.name,
+          to: 'Todos',
+          text: 'sai da sala...',
+          type: 'status',
+          time: dayjs().format("HH:mm:ss")
+        }
+      })
 
-    // await db.collection("messages").
-    // await db.collection("participants").
-
+      await db.collection("messages").insertMany(inactiveMessages)
+      await db.collection("participants").deleteMany(
+        { lastStatus: { $lte: tenSecondsAgo } }
+      )
+    }
 
   } catch (error) {
-    console.log(error)
-    return response.sendStatus(500)
+    console.error(error)
+    res.status(500).send("Deu pau no db no setInterval")
   }
+
 }, 15000)
