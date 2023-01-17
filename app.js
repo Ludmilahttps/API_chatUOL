@@ -31,8 +31,6 @@ mongoClient
     console.log(error)
   })
 
-  maintenance() 
-  
 // * init a server
 server.listen(PORT, () => {
   console.log('Im a server')
@@ -98,7 +96,7 @@ server.get("/messages", async (request, response) => {
   console.log("get messages")
 
   const limit = parseInt(request.query.limit)
-  if (limit && (isNaN(limit) || limit <= 0 || limit === "")) {
+  if (limit && (isNaN(limit) || Number(limit) <= 0 || limit === "")) {
     return response.status(422).send('Unprocessable Entity')
   }
 
@@ -142,18 +140,32 @@ const messageSchema = joi.object({
   type: joi.string().required().valid("message", "private_message"),
 })
 
-function maintenance() {
-  setInterval(async () => {
-    try {
-      await db.collection("participants").find().toArray().forEach(async (participant) => {
-        if (participant.lastStatus < Date.now() - 10000) {
-          await db.collection("participants").deleteOne({ _id: ObjectId(participant._id) })
-          await db.collection("messages").insertOne({ from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
-        }
-      })
-    } catch (error) {
-      console.log(error)
-      return response.sendStatus(500)
-    }
-  }, 10000)
-}
+setInterval( async () => {
+  try {
+    await db.collection("participants").find().toArray().forEach(async (participant) => {
+      if (participant.lastStatus < Date.now() - 10000) {
+        await db.collection("messages").insertOne({ from: participant.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss') })
+        await db.collection("participants").deleteOne({ _id: ObjectId(participant._id) })
+      }
+    })
+
+
+    // const aux = await db.collection("participants").find( {lastStatus: {$lte: Date.now() - 10000}}).toArray()
+    // if(aux.length > 0)
+    // {
+    //   const inative = aux.map((people) => {
+    //     return {
+    //       from: people.name, to: 'Todos', text: 'sai da sala...', type: 'status', time: dayjs(Date.now()).format('HH:mm:ss')
+    //     }
+    //   })
+    // }
+
+    // await db.collection("messages").
+    // await db.collection("participants").
+
+
+  } catch (error) {
+    console.log(error)
+    return response.sendStatus(500)
+  }
+}, 15000)
