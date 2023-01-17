@@ -110,7 +110,7 @@ server.get("/messages", async (request, response) => {
     })
       .toArray()
 
-    response.send(all?.slice(-parseInt(limit)).reverse())
+    response.send(all?.slice(-limit).reverse())
   }
   catch (error) {
     return response.send(error).status(500)
